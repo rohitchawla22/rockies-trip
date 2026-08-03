@@ -1,0 +1,1223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Canadian Rockies &mdash; Trip Itinerary</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Arvo:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+  :root{
+    --cream:#F0E4C8;
+    --cream-dark:#E3D3AC;
+    --ink:#262019;
+    --forest:#1F4B3B;
+    --rust:#C4552A;
+    --mustard:#E4A62F;
+    --teal:#2C6975;
+    --maroon:#7A2E2E;
+    --paper-shadow: rgba(38,32,25,0.18);
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--cream);
+    color:var(--ink);
+    font-family:'Arvo', serif;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .display{font-family:'Bebas Neue', sans-serif; letter-spacing:0.04em;}
+
+  a{color:inherit;}
+
+  /* ---------- Header / hero ---------- */
+  .hero{
+    position:relative;
+    overflow:hidden;
+    background: var(--forest);
+    color:var(--cream);
+    padding: 3.5rem 1.5rem 5rem;
+    text-align:center;
+  }
+  .hero::before{
+    content:"";
+    position:absolute;
+    top:-30%;
+    left:50%;
+    width:900px;
+    height:900px;
+    transform:translateX(-50%);
+    background: repeating-conic-gradient(var(--mustard) 0deg 4deg, transparent 4deg 20deg);
+    opacity:0.16;
+    border-radius:50%;
+  }
+  .hero-content{position:relative; z-index:2;}
+  .hero-eyebrow{
+    font-family:'Arvo', serif;
+    text-transform:uppercase;
+    letter-spacing:0.35em;
+    font-size:0.7rem;
+    color:var(--mustard);
+    margin-bottom:0.75rem;
+  }
+  .hero h1{
+    font-size:clamp(2.8rem, 8vw, 5.5rem);
+    margin:0;
+    line-height:0.95;
+    text-shadow: 3px 3px 0 rgba(0,0,0,0.15);
+  }
+  .hero p.sub{
+    font-style:italic;
+    max-width:32rem;
+    margin:1rem auto 0;
+    font-size:1rem;
+    opacity:0.9;
+  }
+  .skyline{
+    position:absolute;
+    left:0; right:0; bottom:0;
+    height:80px;
+    z-index:1;
+  }
+
+  /* ---------- Tabs ---------- */
+  .tabs-wrap{
+    position:sticky;
+    top:0;
+    z-index:20;
+    background:var(--cream);
+    border-bottom:3px solid var(--ink);
+    padding: 0.75rem 1rem;
+  }
+  .tabs{
+    display:flex;
+    gap:0.6rem;
+    max-width:1000px;
+    margin:0 auto;
+    overflow-x:auto;
+    padding-bottom:2px;
+  }
+  .tab-btn{
+    flex: 0 0 auto;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    width:96px;
+    height:96px;
+    border-radius:50%;
+    border:3px solid var(--ink);
+    background:var(--cream-dark);
+    cursor:pointer;
+    font-family:'Bebas Neue', sans-serif;
+    color:var(--ink);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    position:relative;
+  }
+  .tab-btn:hover{ transform: translateY(-3px); }
+  .tab-btn:focus-visible{ outline: 3px solid var(--teal); outline-offset: 3px; }
+  .tab-btn .tab-day{ font-size:0.65rem; letter-spacing:0.15em; opacity:0.75;}
+  .tab-btn .tab-num{ font-size:1.9rem; line-height:1; }
+  .tab-btn .tab-icon{ font-size:1.1rem; margin-top:2px;}
+  .tab-btn.active{
+    background: var(--accent, var(--rust));
+    color: var(--cream);
+    box-shadow: 4px 4px 0 var(--ink);
+    transform: translateY(-3px);
+  }
+
+  /* ---------- Day panel ---------- */
+  .day-panel{ display:none; }
+  .day-panel.active{ display:block; }
+
+  .day-banner{
+    background: var(--accent, var(--rust));
+    color:var(--cream);
+    padding: 2.25rem 1.5rem;
+    text-align:center;
+    position:relative;
+  }
+  .day-banner h2{
+    font-family:'Bebas Neue', sans-serif;
+    font-size:clamp(2rem, 6vw, 3.4rem);
+    margin:0 0 0.25rem;
+    letter-spacing:0.03em;
+  }
+  .day-banner .date{
+    text-transform:uppercase;
+    letter-spacing:0.3em;
+    font-size:0.75rem;
+    opacity:0.9;
+  }
+  .day-banner .route-line{
+    margin-top:0.6rem;
+    font-style:italic;
+    font-size:0.95rem;
+    opacity:0.95;
+  }
+
+  .content-grid{
+    max-width:1100px;
+    margin: 0 auto;
+    padding: 2rem 1.25rem 4rem;
+    display:grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 2rem;
+  }
+  @media (max-width: 800px){
+    .content-grid{ grid-template-columns: 1fr; }
+  }
+
+  /* ---------- Trail timeline ---------- */
+  .timeline{
+    position:relative;
+    padding-left: 2.2rem;
+  }
+  .timeline::before{
+    content:"";
+    position:absolute;
+    left: 0.85rem;
+    top: 0.4rem;
+    bottom: 0.4rem;
+    width: 3px;
+    background: repeating-linear-gradient(
+      to bottom, var(--ink) 0, var(--ink) 8px, transparent 8px, transparent 16px
+    );
+  }
+  .stop{
+    position:relative;
+    margin-bottom: 1.6rem;
+    background: var(--cream-dark);
+    border:2px solid var(--ink);
+    border-radius: 10px;
+    padding: 0.85rem 1rem;
+    box-shadow: 3px 3px 0 var(--paper-shadow);
+  }
+  .stop::before{
+    content:"";
+    position:absolute;
+    left: -2.05rem;
+    top: 1.1rem;
+    width: 14px;
+    height:14px;
+    background: var(--accent, var(--rust));
+    border:3px solid var(--ink);
+    border-radius:50%;
+  }
+  .stop .time{
+    font-family:'Bebas Neue', sans-serif;
+    letter-spacing:0.05em;
+    color: var(--accent, var(--rust));
+    font-size:1.05rem;
+  }
+  .stop h3{
+    margin:0.15rem 0 0.25rem;
+    font-family:'Bebas Neue', sans-serif;
+    font-size:1.4rem;
+    letter-spacing:0.02em;
+  }
+  .stop p{ margin:0; font-size:0.92rem; line-height:1.45; }
+  .stop .note{
+    margin-top:0.5rem;
+    font-size:0.82rem;
+    font-style:italic;
+    color: var(--forest);
+    border-left: 3px solid var(--accent, var(--rust));
+    padding-left:0.6rem;
+  }
+  .stop-head{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:0.6rem;
+  }
+  .stop-check{
+    appearance:none;
+    -webkit-appearance:none;
+    width:22px; height:22px;
+    min-width:22px;
+    border:2px solid var(--ink);
+    border-radius:5px;
+    display:grid;
+    place-content:center;
+    cursor:pointer;
+    background:var(--cream);
+    margin-top:2px;
+  }
+  .stop-check::before{
+    content:"";
+    width:12px; height:12px;
+    transform: scale(0);
+    transition: transform 0.1s ease;
+    background: var(--accent, var(--rust));
+    clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 45% 62%);
+  }
+  .stop-check:checked::before{ transform: scale(1); }
+  .stop-check:focus-visible{ outline:3px solid var(--teal); outline-offset:2px;}
+  .stop.done{ opacity:0.6; background: var(--cream); }
+  .stop.done h3{ text-decoration: line-through; }
+
+  .lodge-card{
+    margin-top:1.5rem;
+    background: var(--forest);
+    color:var(--cream);
+    border-radius:10px;
+    padding:1rem 1.2rem;
+    display:flex;
+    align-items:center;
+    gap:0.75rem;
+    box-shadow: 3px 3px 0 var(--paper-shadow);
+  }
+  .lodge-card .icon{ font-size:1.6rem; }
+  .lodge-card h4{ margin:0 0 0.15rem; font-family:'Bebas Neue', sans-serif; letter-spacing:0.03em; font-size:1.1rem;}
+  .lodge-card p{ margin:0; font-size:0.85rem; opacity:0.9;}
+
+  /* ---------- Side column: map + checklist ---------- */
+  .side-col{ display:flex; flex-direction:column; gap:1.5rem; }
+
+  .card{
+    background: var(--cream-dark);
+    border:2px solid var(--ink);
+    border-radius:10px;
+    padding:1rem;
+    box-shadow: 3px 3px 0 var(--paper-shadow);
+  }
+  .card h3{
+    margin:0 0 0.75rem;
+    font-family:'Bebas Neue', sans-serif;
+    letter-spacing:0.05em;
+    font-size:1.3rem;
+    color: var(--accent, var(--rust));
+    display:flex;
+    align-items:center;
+    gap:0.4rem;
+  }
+
+  .map-el{
+    width:100%;
+    height:320px;
+    border-radius:8px;
+    border:2px solid var(--ink);
+  }
+  .map-note{ font-size:0.72rem; opacity:0.7; margin-top:0.5rem; font-style:italic;}
+
+  .checklist{ list-style:none; margin:0; padding:0; }
+  .checklist li{
+    display:flex;
+    align-items:flex-start;
+    gap:0.6rem;
+    padding:0.5rem 0;
+    border-bottom: 1px dashed rgba(38,32,25,0.25);
+    font-size:0.92rem;
+  }
+  .checklist li:last-child{ border-bottom:none; }
+  .checklist input[type=checkbox]{
+    appearance:none;
+    -webkit-appearance:none;
+    width:20px; height:20px;
+    min-width:20px;
+    border:2px solid var(--ink);
+    border-radius:4px;
+    display:grid;
+    place-content:center;
+    cursor:pointer;
+    background:var(--cream);
+    margin-top:2px;
+  }
+  .checklist input[type=checkbox]::before{
+    content:"";
+    width:11px; height:11px;
+    transform: scale(0);
+    transition: transform 0.1s ease;
+    background: var(--accent, var(--rust));
+    clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 45% 62%);
+  }
+  .checklist input[type=checkbox]:checked::before{ transform: scale(1); }
+  .checklist input:focus-visible{ outline:3px solid var(--teal); outline-offset:2px;}
+  .checklist li.done span{ text-decoration: line-through; opacity:0.55; }
+  .checklist-progress{
+    font-size:0.78rem;
+    text-transform:uppercase;
+    letter-spacing:0.12em;
+    margin-top:0.75rem;
+    opacity:0.75;
+  }
+
+  footer{
+    text-align:center;
+    padding: 2rem 1rem 3rem;
+    font-size:0.8rem;
+    opacity:0.6;
+  }
+
+  /* ---------- Expenses tab ---------- */
+  .expenses-banner{
+    background: #4A3B7A;
+    color:var(--cream);
+    padding: 2.25rem 1.5rem;
+    text-align:center;
+  }
+  .expenses-banner h2{
+    font-family:'Bebas Neue', sans-serif;
+    font-size:clamp(2rem, 6vw, 3.4rem);
+    margin:0 0 0.25rem;
+    letter-spacing:0.03em;
+  }
+  .expenses-banner .sub{ font-style:italic; opacity:0.9; font-size:0.95rem; }
+
+  .exp-grid{
+    max-width:1100px;
+    margin:0 auto;
+    padding: 2rem 1.25rem 4rem;
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+  @media (max-width: 800px){ .exp-grid{ grid-template-columns: 1fr; } }
+  .exp-full{ grid-column: 1 / -1; }
+
+  .field{ margin-bottom:0.85rem; }
+  .field label{
+    display:block;
+    font-size:0.75rem;
+    text-transform:uppercase;
+    letter-spacing:0.1em;
+    margin-bottom:0.3rem;
+    opacity:0.75;
+  }
+  .field input[type=text],
+  .field input[type=number],
+  .field input[type=date],
+  .field input[type=url],
+  .field select{
+    width:100%;
+    padding:0.55rem 0.65rem;
+    border:2px solid var(--ink);
+    border-radius:6px;
+    background:var(--cream);
+    font-family:'Arvo', serif;
+    font-size:0.95rem;
+    color:var(--ink);
+  }
+  .field input:focus-visible, .field select:focus-visible{
+    outline:3px solid var(--teal); outline-offset:1px;
+  }
+  .chip-row{ display:flex; flex-wrap:wrap; gap:0.5rem; }
+  .chip{
+    display:inline-flex;
+    align-items:center;
+    gap:0.35rem;
+    padding:0.35rem 0.7rem;
+    border:2px solid var(--ink);
+    border-radius:999px;
+    background:var(--cream);
+    font-size:0.85rem;
+    cursor:pointer;
+    user-select:none;
+  }
+  .chip input{ accent-color:#4A3B7A; }
+  .chip.member-tag{ cursor:default; background:var(--cream-dark); }
+  .chip.member-tag button{
+    border:none; background:none; cursor:pointer; font-size:0.9rem; color:var(--rust); line-height:1; padding:0;
+  }
+
+  .btn{
+    font-family:'Bebas Neue', sans-serif;
+    letter-spacing:0.05em;
+    font-size:1rem;
+    padding:0.6rem 1.1rem;
+    border:2px solid var(--ink);
+    border-radius:7px;
+    background: #4A3B7A;
+    color:var(--cream);
+    cursor:pointer;
+    box-shadow: 2px 2px 0 var(--paper-shadow);
+  }
+  .btn:hover{ transform: translateY(-1px); }
+  .btn:focus-visible{ outline:3px solid var(--teal); outline-offset:2px; }
+  .btn.secondary{ background:var(--cream-dark); color:var(--ink); }
+  .btn.small{ font-size:0.8rem; padding:0.35rem 0.65rem; }
+
+  .expense-row{
+    border:2px solid var(--ink);
+    border-radius:9px;
+    padding:0.75rem 0.9rem;
+    margin-bottom:0.75rem;
+    background:var(--cream);
+  }
+  .expense-row .exp-top{
+    display:flex;
+    justify-content:space-between;
+    align-items:baseline;
+    gap:0.5rem;
+    flex-wrap:wrap;
+  }
+  .expense-row .exp-desc{ font-family:'Bebas Neue', sans-serif; font-size:1.15rem; letter-spacing:0.02em; }
+  .expense-row .exp-amt{ font-family:'Bebas Neue', sans-serif; font-size:1.25rem; color:#4A3B7A; }
+  .expense-row .exp-meta{ font-size:0.82rem; opacity:0.8; margin-top:0.2rem; }
+  .expense-row .exp-actions{ margin-top:0.5rem; display:flex; gap:0.5rem; flex-wrap:wrap; }
+
+  .balance-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:0.5rem 0;
+    border-bottom:1px dashed rgba(38,32,25,0.25);
+    font-size:0.95rem;
+  }
+  .balance-row:last-child{ border-bottom:none; }
+  .balance-amt.positive{ color: var(--forest); font-weight:bold; }
+  .balance-amt.negative{ color: var(--rust); font-weight:bold; }
+  .balance-amt.zero{ opacity:0.6; }
+
+  .settle-row{
+    padding:0.55rem 0.7rem;
+    border:2px dashed var(--ink);
+    border-radius:7px;
+    margin-bottom:0.5rem;
+    font-size:0.92rem;
+  }
+
+  .empty-note{ font-size:0.85rem; opacity:0.65; font-style:italic; padding:0.5rem 0; }
+  .sheet-status{ font-size:0.8rem; margin-top:0.5rem; opacity:0.8; }
+  .sheet-status.ok{ color:var(--forest); }
+  .sheet-status.missing{ color:var(--rust); }
+
+  @media (prefers-reduced-motion: reduce){
+    html{ scroll-behavior:auto; }
+    *{ transition:none !important; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-content">
+    <div class="hero-eyebrow">Alberta &amp; British Columbia &middot; Sep 3&ndash;7</div>
+    <h1 class="display">THE CANADIAN<br>ROCKIES</h1>
+    <p class="sub">Glaciers, teahouses, turquoise lakes &amp; one very long parkway &mdash; five days, start to finish.</p>
+  </div>
+  <svg class="skyline" viewBox="0 0 1200 80" preserveAspectRatio="none">
+    <polygon points="0,80 0,50 120,10 220,55 320,20 420,60 540,15 660,50 760,25 880,58 980,20 1080,50 1200,30 1200,80" fill="#16362B"/>
+    <polygon points="0,80 0,65 150,35 260,60 380,40 520,65 640,38 780,62 900,42 1040,64 1160,45 1200,58 1200,80" fill="#1F4B3B" opacity="0.85"/>
+  </svg>
+</header>
+
+<nav class="tabs-wrap" aria-label="Trip days">
+  <div class="tabs" id="tabs"></div>
+</nav>
+
+<main id="panels"></main>
+
+<footer>Made for a trip that involves two hot springs, three teahouses, and at least one glacier. Have fun out there.</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+const ACCENTS = {
+  1: '#C4552A', // rust
+  2: '#2C6975', // teal
+  3: '#1F4B3B', // forest
+  4: '#B8850F', // mustard (darkened for contrast)
+  5: '#7A2E2E'  // maroon
+};
+
+const TRIP = [
+  {
+    id:1,
+    label:"Icefields",
+    icon:"&#9970;", // mountain
+    title:"Calgary &rarr; Overlander Mountain Lodge",
+    date:"Sep 3",
+    route:"Peyto Lake &middot; Columbia Icefield &middot; Athabasca Falls",
+    lodging:{ name:"Overlander Mountain Lodge", note:"Check in this evening &mdash; near Jasper's East Gate." },
+    stops:[
+      {time:"8:00 &ndash; 9:30am", name:"Land &amp; pick up rental car", desc:"Calgary International Airport.", lat:51.1225, lng:-114.0076},
+      {time:"9:30am &ndash; 12:30pm", name:"Drive to Peyto Lake", desc:"", lat:51.7247, lng:-116.5252},
+      {time:"12:30 &ndash; 1:00pm", name:"Peyto Lake viewpoint", desc:"", lat:51.7247, lng:-116.5252},
+      {time:"1:00 &ndash; 2:00pm", name:"Drive to Columbia Icefield", desc:"", lat:52.2183, lng:-117.2411},
+      {time:"2:00 &ndash; 4:00pm", name:"Buffer / lunch near Icefield Centre", desc:"Arrive early for tour check-in.", lat:52.2183, lng:-117.2411},
+      {time:"4:00 &ndash; 6:45pm", name:"Columbia Icefield", desc:"Ice Explorer glacier ride + Glacier Skywalk.", lat:52.2183, lng:-117.2411},
+      {time:"6:45 &ndash; 7:30pm", name:"Drive to Athabasca Falls", desc:"", lat:52.6597, lng:-117.8814},
+      {time:"7:30 &ndash; 8:00pm", name:"Athabasca Falls", desc:"Short boardwalk viewing trail.", lat:52.6597, lng:-117.8814},
+      {time:"8:00 &ndash; 8:30pm", name:"Through Jasper townsite", desc:"", lat:52.8734, lng:-118.0814},
+      {time:"8:30 &ndash; 9:15pm", name:"Drive to Overlander Mountain Lodge", desc:"Check in.", lat:53.2011, lng:-117.5261}
+    ]
+  },
+  {
+    id:2,
+    label:"Dunes &amp; Falls",
+    icon:"&#127958;", // hiking figure
+    title:"Overlander &rarr; Canmore",
+    date:"Sep 4",
+    route:"Miette Hot Springs &middot; Jasper Lake Sand Dunes &middot; Bow Glacier Falls",
+    lodging:{ name:"Blackstone Mountain Lodge, Canmore", note:"Home base for the next four nights." },
+    stops:[
+      {time:"8:25 &ndash; 9:00am", name:"Drive from Overlander to Miette Hot Springs", desc:"", lat:53.0294, lng:-117.8339},
+      {time:"9:00 &ndash; 10:00am", name:"Miette Hot Springs soak", desc:"", note:"Posted hours vary by source for early September &mdash; call ahead (1-800-767-1611) to confirm opening time.", lat:53.0294, lng:-117.8339},
+      {time:"10:00 &ndash; 10:35am", name:"Drive to Jasper Lake Sand Dunes", desc:"", lat:52.9500, lng:-118.0300},
+      {time:"10:35 &ndash; 11:05am", name:"Jasper Lake Sand Dunes", desc:"The only sand dune ecosystem in the Canadian Rockies.", lat:52.9500, lng:-118.0300},
+      {time:"11:05am &ndash; 3:05pm", name:"Drive south", desc:"Past Athabasca Falls and the Icefield again &mdash; no stops, toward Bow Lake.", lat:51.6997, lng:-116.4762},
+      {time:"3:05 &ndash; 5:05pm", name:"Bow Glacier Falls hike", desc:"~7&ndash;8 km round trip from Bow Lake.", lat:51.6997, lng:-116.4762},
+      {time:"5:05 &ndash; 6:35pm", name:"Drive to Canmore", desc:"", lat:51.0784, lng:-115.3617},
+      {time:"6:35pm", name:"Arrive Blackstone Mountain Lodge", desc:"Check in.", lat:51.0784, lng:-115.3617}
+    ]
+  },
+  {
+    id:3,
+    label:"Lake Louise",
+    icon:"&#9974;", // tent-ish / teahouse cup
+    title:"Canmore &mdash; Lake Louise, Emerald Lake &amp; Wapta Falls",
+    date:"Sep 5",
+    route:"Fairview Lookout &middot; Lake Agnes Tea House &middot; Emerald Lake &middot; Wapta Falls",
+    lodging:{ name:"Blackstone Mountain Lodge, Canmore", note:"Long day &mdash; back by evening." },
+    stops:[
+      {time:"7:00 &ndash; 7:55am", name:"Drive to Lake Louise", desc:"Early start &mdash; parking fills up fast.", lat:51.4254, lng:-116.1773},
+      {time:"7:55 &ndash; 9:00am", name:"Fairview Lookout hike", desc:"~1.5 mi round trip.", lat:51.4200, lng:-116.1850},
+      {time:"9:00 &ndash; 11:30am", name:"Lake Agnes Tea House hike", desc:"~4.6 mi round trip, includes tea house stop.", note:"Plain of Six Glaciers skipped to leave room for Emerald Lake &amp; Wapta Falls.", lat:51.4360, lng:-116.2010},
+      {time:"11:30am &ndash; 12:15pm", name:"Drive to Emerald Lake", desc:"Via Field, BC.", lat:51.4429, lng:-116.5285},
+      {time:"12:15 &ndash; 1:15pm", name:"Lunch at Cilantro on the Lake", desc:"Lakeside restaurant at Emerald Lake Lodge.", lat:51.4429, lng:-116.5285},
+      {time:"1:15 &ndash; 2:45pm", name:"Kayaking at Emerald Lake", desc:"", lat:51.4429, lng:-116.5285},
+      {time:"2:45 &ndash; 3:05pm", name:"Drive to Wapta Falls trailhead", desc:"", lat:51.4230, lng:-116.6980},
+      {time:"3:05 &ndash; 5:00pm", name:"Wapta Falls hike", desc:"~2.4 km one way.", lat:51.4230, lng:-116.6980},
+      {time:"5:00 &ndash; 6:30pm", name:"Drive back to Canmore", desc:"", lat:51.0784, lng:-115.3617}
+    ]
+  },
+  {
+    id:4,
+    label:"Sentinel Pass",
+    icon:"&#9968;", // flag/mountain marker
+    title:"Moraine Lake &mdash; Sentinel Pass Hike",
+    date:"Sep 6",
+    route:"Sentinel Pass via Larch Valley &middot; free afternoon",
+    lodging:{ name:"Blackstone Mountain Lodge, Canmore", note:"Dinner in Banff tonight." },
+    stops:[
+      {time:"5:00 &ndash; 5:45am", name:"Drive to Lake Louise Park &amp; Ride", desc:"", lat:51.4396, lng:-116.1900},
+      {time:"5:45 &ndash; 6:15am", name:"Parks Canada shuttle to Moraine Lake", desc:"", lat:51.3217, lng:-116.1860},
+      {time:"6:15 &ndash; 10:45am", name:"Sentinel Pass hike via Larch Valley", desc:"~11 km round trip, ~750&ndash;800m elevation gain.", note:"Strenuous &mdash; book the shuttle reservation well in advance.", lat:51.3217, lng:-116.1860},
+      {time:"10:45 &ndash; 11:15am", name:"Shuttle back to Park &amp; Ride", desc:"", lat:51.4396, lng:-116.1900},
+      {time:"11:15am &ndash; 12:00pm", name:"Drive back to Canmore", desc:"", lat:51.0784, lng:-115.3617},
+      {time:"12:00 &ndash; 1:00pm", name:"Lunch / rest", desc:"", lat:51.0784, lng:-115.3617},
+      {time:"1:00 &ndash; 6:00pm", name:"Free time", desc:"Hot springs, Surprise Corner, gondola.", lat:51.1784, lng:-115.5708},
+      {time:"Evening", name:"Dinner in Banff", desc:"", lat:51.1784, lng:-115.5708}
+    ]
+  },
+  {
+    id:5,
+    label:"Canyon &amp; Fly Home",
+    icon:"&#9992;", // plane
+    title:"Canmore &rarr; Calgary",
+    date:"Sep 7",
+    route:"Johnston Canyon &middot; Calgary Airport",
+    lodging:{ name:"11:30pm flight departs", note:"Checked out of Blackstone Mountain Lodge this morning." },
+    stops:[
+      {time:"8:00 &ndash; 8:30am", name:"Drive to Johnston Canyon", desc:"", lat:51.2216, lng:-115.8360},
+      {time:"8:30 &ndash; 10:00am", name:"Johnston Canyon hike", desc:"Catwalks along the canyon to the falls.", lat:51.2216, lng:-115.8360},
+      {time:"10:00 &ndash; 10:30am", name:"Drive back to Blackstone Mountain Lodge", desc:"", lat:51.0784, lng:-115.3617},
+      {time:"10:30 &ndash; 11:00am", name:"Check out", desc:"", lat:51.0784, lng:-115.3617},
+      {time:"11:00am &ndash; 12:00pm", name:"Lunch in Canmore/Banff", desc:"", lat:51.0784, lng:-115.3617},
+      {time:"12:00 &ndash; 1:30pm", name:"Drive to Calgary", desc:"", lat:51.0447, lng:-114.0719},
+      {time:"1:30 &ndash; 11:00pm", name:"Free time in Calgary", desc:"Before the flight.", lat:51.0447, lng:-114.0719},
+      {time:"11:30pm", name:"Flight departs", desc:"Safe travels home.", lat:51.1225, lng:-114.0076}
+    ]
+  }
+];
+
+/* ---------- Storage ---------- */
+const STORAGE_KEY = "rockies-trip-checklist-v1";
+let checklistState = {};
+try{
+  checklistState = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+}catch(e){ checklistState = {}; }
+
+function saveChecklist(){
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(checklistState)); }
+  catch(e){ /* storage unavailable in this context; state still works for the session */ }
+}
+
+/* ---------- Build tabs & panels ---------- */
+const tabsEl = document.getElementById('tabs');
+const panelsEl = document.getElementById('panels');
+const mapInstances = {};
+
+TRIP.forEach((day, idx) => {
+  const accent = ACCENTS[day.id];
+
+  // Tab button
+  const btn = document.createElement('button');
+  btn.className = 'tab-btn' + (idx===0 ? ' active' : '');
+  btn.style.setProperty('--accent', accent);
+  btn.setAttribute('data-day', day.id);
+  btn.setAttribute('aria-selected', idx===0 ? 'true' : 'false');
+  btn.innerHTML = `<span class="tab-day">Day</span><span class="tab-num">${day.id}</span><span class="tab-icon">${day.icon}</span>`;
+  btn.addEventListener('click', () => showDay(day.id));
+  tabsEl.appendChild(btn);
+
+  // Panel
+  const panel = document.createElement('section');
+  panel.className = 'day-panel' + (idx===0 ? ' active' : '');
+  panel.id = 'panel-' + day.id;
+  panel.style.setProperty('--accent', accent);
+
+  const stopsHTML = day.stops.map((s, i) => {
+    const key = `d${day.id}-s${i}`;
+    const checked = checklistState[key] ? 'checked' : '';
+    const doneClass = checklistState[key] ? ' done' : '';
+    return `
+      <div class="stop${doneClass}" data-key="${key}">
+        <div class="stop-head">
+          <div>
+            <div class="time display">${s.time}</div>
+            <h3>${s.name}</h3>
+          </div>
+          <input type="checkbox" class="stop-check" ${checked} aria-label="Mark done: ${s.name}">
+        </div>
+        ${s.desc ? `<p>${s.desc}</p>` : ''}
+        ${s.note ? `<div class="note">${s.note}</div>` : ''}
+      </div>`;
+  }).join('');
+
+  const checklistHTML = day.stops.map((s, i) => {
+    const key = `d${day.id}-s${i}`;
+    const checked = checklistState[key] ? 'checked' : '';
+    const doneClass = checklistState[key] ? 'done' : '';
+    return `
+      <li class="${doneClass}" data-key="${key}">
+        <input type="checkbox" ${checked} aria-label="Mark done: ${s.name}">
+        <span>${s.name}</span>
+      </li>`;
+  }).join('');
+
+  panel.innerHTML = `
+    <div class="day-banner" style="--accent:${accent}">
+      <h2 class="display">${day.title}</h2>
+      <div class="date">${day.date}</div>
+      <div class="route-line">${day.route}</div>
+    </div>
+    <div class="content-grid">
+      <div>
+        <div class="timeline">${stopsHTML}</div>
+        <div class="lodge-card">
+          <div class="icon">&#127968;</div>
+          <div>
+            <h4>${day.lodging.name}</h4>
+            <p>${day.lodging.note}</p>
+          </div>
+        </div>
+      </div>
+      <div class="side-col">
+        <div class="card">
+          <h3>&#128506;&#65039; Route Map</h3>
+          <div id="map-${day.id}" class="map-el"></div>
+          <div class="map-note">Pins are approximate &mdash; route line follows stop order for the day.</div>
+        </div>
+        <div class="card">
+          <h3>&#9989; Checklist</h3>
+          <ul class="checklist" id="checklist-${day.id}">${checklistHTML}</ul>
+          <div class="checklist-progress" id="progress-${day.id}"></div>
+        </div>
+      </div>
+    </div>
+  `;
+  panelsEl.appendChild(panel);
+});
+
+/* Expenses tab button */
+const expBtn = document.createElement('button');
+expBtn.className = 'tab-btn';
+expBtn.style.setProperty('--accent', '#4A3B7A');
+expBtn.setAttribute('data-day', 'expenses');
+expBtn.setAttribute('aria-selected', 'false');
+expBtn.innerHTML = `<span class="tab-day">Split</span><span class="tab-icon" style="font-size:1.6rem;">&#128176;</span><span class="tab-icon">Costs</span>`;
+expBtn.addEventListener('click', () => showDay('expenses'));
+tabsEl.appendChild(expBtn);
+
+/* Expenses panel (built once, static shell — content rendered by renderExpenses) */
+const expPanel = document.createElement('section');
+expPanel.className = 'day-panel';
+expPanel.id = 'panel-expenses';
+expPanel.innerHTML = `
+  <div class="expenses-banner">
+    <h2 class="display">SPLIT THE COSTS</h2>
+    <div class="sub">Who paid, who owes &mdash; sorted out before anyone has to do mental math at dinner.</div>
+  </div>
+  <div class="exp-grid">
+    <div class="card exp-full">
+      <h3 style="color:#4A3B7A;">&#128101; Trip Members</h3>
+      <div class="chip-row" id="members-list"></div>
+      <div class="field" style="margin-top:0.85rem; max-width:320px;">
+        <label for="new-member">Add a person</label>
+        <div style="display:flex; gap:0.5rem;">
+          <input type="text" id="new-member" placeholder="Name">
+          <button class="btn small" id="add-member-btn">Add</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 style="color:#4A3B7A;">&#10133; Add an Expense</h3>
+      <div class="field">
+        <label for="exp-desc">What was it?</label>
+        <input type="text" id="exp-desc" placeholder="e.g. Groceries for the cabin">
+      </div>
+      <div class="field">
+        <label for="exp-amount">Amount (CAD)</label>
+        <input type="number" id="exp-amount" min="0" step="0.01" placeholder="0.00">
+      </div>
+      <div class="field">
+        <label for="exp-paidby">Paid by</label>
+        <select id="exp-paidby"></select>
+      </div>
+      <div class="field">
+        <label>Split between</label>
+        <div class="chip-row" id="exp-participants"></div>
+      </div>
+      <div class="field">
+        <label for="exp-date">Date</label>
+        <input type="date" id="exp-date">
+      </div>
+      <button class="btn" id="add-expense-btn">Add Expense</button>
+    </div>
+
+    <div class="card">
+      <h3 style="color:#4A3B7A;">&#9878;&#65039; Balances</h3>
+      <div id="balances-list"></div>
+      <h3 style="color:#4A3B7A; margin-top:1.25rem;">&#128179; Settle Up</h3>
+      <div id="settle-list"></div>
+    </div>
+
+    <div class="card exp-full">
+      <h3 style="color:#4A3B7A;">&#128203; All Expenses</h3>
+      <div id="expenses-list"></div>
+    </div>
+
+    <div class="card exp-full">
+      <h3 style="color:#4A3B7A;">&#128203; Google Sheet Log (optional)</h3>
+      <p style="font-size:0.88rem; margin-top:0;">This is a separate paper trail &mdash; logging an expense here opens a pre-filled Google Form in a new tab so you don't have to retype it. It does <strong>not</strong> sync back into the balances above; those are calculated from what you enter on this page.</p>
+      <div class="field">
+        <label for="sheet-form-url">Google Form base URL (the "viewform" link)</label>
+        <input type="url" id="sheet-form-url" placeholder="https://docs.google.com/forms/d/e/XXXXXXXX/viewform">
+      </div>
+      <div class="field">
+        <label for="sheet-entry-desc">Entry ID &mdash; Description field (e.g. entry.111111111)</label>
+        <input type="text" id="sheet-entry-desc" placeholder="entry.111111111">
+      </div>
+      <div class="field">
+        <label for="sheet-entry-amount">Entry ID &mdash; Amount field</label>
+        <input type="text" id="sheet-entry-amount" placeholder="entry.222222222">
+      </div>
+      <div class="field">
+        <label for="sheet-entry-paidby">Entry ID &mdash; Paid By field</label>
+        <input type="text" id="sheet-entry-paidby" placeholder="entry.333333333">
+      </div>
+      <div class="field">
+        <label for="sheet-entry-participants">Entry ID &mdash; Split Between field</label>
+        <input type="text" id="sheet-entry-participants" placeholder="entry.444444444">
+      </div>
+      <button class="btn secondary" id="save-sheet-config-btn">Save Form Config</button>
+      <div class="sheet-status" id="sheet-status"></div>
+    </div>
+  </div>
+`;
+panelsEl.appendChild(expPanel);
+
+function showDay(dayId){
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    const active = String(b.getAttribute('data-day')) === String(dayId);
+    b.classList.toggle('active', active);
+    b.setAttribute('aria-selected', active ? 'true' : 'false');
+  });
+  document.querySelectorAll('.day-panel').forEach(p => {
+    p.classList.toggle('active', p.id === 'panel-' + dayId);
+  });
+  if(dayId === 'expenses'){
+    renderExpensesUI();
+  } else {
+    // init map lazily once panel is visible
+    initMap(dayId);
+  }
+}
+
+function updateProgress(dayId){
+  const day = TRIP.find(d => d.id === dayId);
+  const total = day.stops.length;
+  let done = 0;
+  day.stops.forEach((s,i) => { if(checklistState[`d${dayId}-s${i}`]) done++; });
+  document.getElementById('progress-'+dayId).textContent = `${done} / ${total} stops checked off`;
+}
+
+/* checklist interactivity */
+function setKeyState(dayId, key, isChecked){
+  checklistState[key] = isChecked;
+  saveChecklist();
+
+  const stopEl = document.querySelector(`.stop[data-key="${key}"]`);
+  if(stopEl){
+    stopEl.classList.toggle('done', isChecked);
+    const cb = stopEl.querySelector('.stop-check');
+    if(cb) cb.checked = isChecked;
+  }
+  const liEl = document.querySelector(`#checklist-${dayId} li[data-key="${key}"]`);
+  if(liEl){
+    liEl.classList.toggle('done', isChecked);
+    const cb = liEl.querySelector('input[type=checkbox]');
+    if(cb) cb.checked = isChecked;
+  }
+  updateProgress(dayId);
+}
+
+TRIP.forEach(day => {
+  const list = document.getElementById('checklist-'+day.id);
+  list.addEventListener('change', (e) => {
+    const target = e.target;
+    if(target.matches('input[type=checkbox]')){
+      const li = target.closest('li');
+      const key = li.getAttribute('data-key');
+      setKeyState(day.id, key, target.checked);
+    }
+  });
+
+  const panel = document.getElementById('panel-'+day.id);
+  panel.addEventListener('change', (e) => {
+    const target = e.target;
+    if(target.matches('.stop-check')){
+      const stopEl = target.closest('.stop');
+      const key = stopEl.getAttribute('data-key');
+      setKeyState(day.id, key, target.checked);
+    }
+  });
+
+  updateProgress(day.id);
+});
+
+/* ---------- Maps ---------- */
+function initMap(dayId){
+  if(mapInstances[dayId]) {
+    setTimeout(() => mapInstances[dayId].invalidateSize(), 50);
+    return;
+  }
+  const day = TRIP.find(d => d.id === dayId);
+  const accent = ACCENTS[day.id];
+  const el = document.getElementById('map-'+dayId);
+  const map = L.map(el, { scrollWheelZoom:false });
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors',
+    maxZoom: 15
+  }).addTo(map);
+
+  const latlngs = day.stops.map(s => [s.lat, s.lng]);
+  const uniquePts = [];
+  latlngs.forEach(p => {
+    const last = uniquePts[uniquePts.length-1];
+    if(!last || last[0]!==p[0] || last[1]!==p[1]) uniquePts.push(p);
+  });
+
+  L.polyline(uniquePts, { color: accent, weight: 4, opacity: 0.85, dashArray: '1 10', lineCap:'round' }).addTo(map);
+
+  day.stops.forEach((s, i) => {
+    const marker = L.circleMarker([s.lat, s.lng], {
+      radius: 7,
+      fillColor: accent,
+      color: '#262019',
+      weight: 2,
+      fillOpacity: 1
+    }).addTo(map);
+    marker.bindPopup(`<strong>${s.name}</strong><br>${s.time}`);
+  });
+
+  map.fitBounds(uniquePts, { padding:[24,24] });
+  mapInstances[dayId] = map;
+}
+
+/* init first map on load */
+window.addEventListener('load', () => {
+  initMap(TRIP[0].id);
+  renderMembers();
+  renderSheetConfigUI();
+});
+
+/* ================= EXPENSES / SPLITWISE MODULE ================= */
+const EXP_KEY = "rockies-trip-expenses-v1";
+const SHEET_KEY = "rockies-trip-sheet-config-v1";
+
+function loadExpenseData(){
+  try{
+    const raw = JSON.parse(localStorage.getItem(EXP_KEY) || "null");
+    if(raw) return raw;
+  }catch(e){ /* fall through to default */ }
+  return { members: ["Rohit", "Taashi", "Saloni", "Aman"], expenses: [] };
+}
+function saveExpenseData(data){
+  try{ localStorage.setItem(EXP_KEY, JSON.stringify(data)); }
+  catch(e){ /* storage unavailable; state still works for this session */ }
+}
+function loadSheetConfig(){
+  const DEFAULT_CFG = {
+    formUrl: "https://docs.google.com/forms/d/e/1FAIpQLScJSvSyZLZnVJz09xGSTYEPSU17qlVsnQu7CuCvRCRjvLXieA/viewform",
+    desc: "entry.1105243669",
+    amount: "entry.826105118",
+    paidBy: "entry.35607627",
+    participants: "entry.494331471"
+  };
+  try{
+    const saved = JSON.parse(localStorage.getItem(SHEET_KEY) || "null");
+    if(saved) return saved;
+  }catch(e){ /* fall through to default */ }
+  return DEFAULT_CFG;
+}
+function saveSheetConfig(cfg){
+  try{ localStorage.setItem(SHEET_KEY, JSON.stringify(cfg)); }
+  catch(e){ /* storage unavailable */ }
+}
+
+let expData = loadExpenseData();
+
+function fmtMoney(n){
+  const sign = n < 0 ? '-' : '';
+  return sign + '$' + Math.abs(n).toFixed(2);
+}
+
+function computeBalances(){
+  const balances = {};
+  expData.members.forEach(m => balances[m] = 0);
+  expData.expenses.forEach(exp => {
+    if(!balances.hasOwnProperty(exp.paidBy)) balances[exp.paidBy] = 0;
+    balances[exp.paidBy] += exp.amount;
+    const share = exp.amount / exp.participants.length;
+    exp.participants.forEach(p => {
+      if(!balances.hasOwnProperty(p)) balances[p] = 0;
+      balances[p] -= share;
+    });
+  });
+  return balances;
+}
+
+function simplifyDebts(balances){
+  const creditors = [];
+  const debtors = [];
+  Object.entries(balances).forEach(([name, amt]) => {
+    const rounded = Math.round(amt * 100) / 100;
+    if(rounded > 0.005) creditors.push({name, amt: rounded});
+    else if(rounded < -0.005) debtors.push({name, amt: -rounded});
+  });
+  creditors.sort((a,b) => b.amt - a.amt);
+  debtors.sort((a,b) => b.amt - a.amt);
+
+  const settlements = [];
+  let ci = 0, di = 0;
+  while(ci < creditors.length && di < debtors.length){
+    const c = creditors[ci], d = debtors[di];
+    const amt = Math.min(c.amt, d.amt);
+    if(amt > 0.005){
+      settlements.push({ from: d.name, to: c.name, amount: amt });
+    }
+    c.amt -= amt; d.amt -= amt;
+    if(c.amt <= 0.005) ci++;
+    if(d.amt <= 0.005) di++;
+  }
+  return settlements;
+}
+
+function renderMembers(){
+  const el = document.getElementById('members-list');
+  if(!el) return;
+  el.innerHTML = expData.members.map(m => `
+    <span class="chip member-tag" data-member="${m}">
+      ${m} <button type="button" class="remove-member-btn" data-member="${m}" aria-label="Remove ${m}">&times;</button>
+    </span>
+  `).join('');
+
+  const paidBySel = document.getElementById('exp-paidby');
+  if(paidBySel){
+    paidBySel.innerHTML = expData.members.map(m => `<option value="${m}">${m}</option>`).join('');
+  }
+  const partWrap = document.getElementById('exp-participants');
+  if(partWrap){
+    partWrap.innerHTML = expData.members.map(m => `
+      <label class="chip"><input type="checkbox" class="exp-part-check" value="${m}" checked> ${m}</label>
+    `).join('');
+  }
+}
+
+function renderExpenseList(){
+  const el = document.getElementById('expenses-list');
+  if(!el) return;
+  if(expData.expenses.length === 0){
+    el.innerHTML = `<div class="empty-note">No expenses logged yet &mdash; add your first one on the left.</div>`;
+    return;
+  }
+  const sorted = [...expData.expenses].sort((a,b) => (b.date || '').localeCompare(a.date || ''));
+  el.innerHTML = sorted.map(exp => {
+    const share = (exp.amount / exp.participants.length).toFixed(2);
+    return `
+      <div class="expense-row" data-id="${exp.id}">
+        <div class="exp-top">
+          <span class="exp-desc">${exp.desc}</span>
+          <span class="exp-amt">${fmtMoney(exp.amount)}</span>
+        </div>
+        <div class="exp-meta">Paid by ${exp.paidBy} &middot; split between ${exp.participants.join(', ')} (${fmtMoney(parseFloat(share))} each)${exp.date ? ' &middot; ' + exp.date : ''}</div>
+        <div class="exp-actions">
+          <button class="btn small secondary log-sheet-btn" data-id="${exp.id}">Log to Sheet</button>
+          <button class="btn small secondary delete-exp-btn" data-id="${exp.id}">Delete</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderBalances(){
+  const balEl = document.getElementById('balances-list');
+  const settleEl = document.getElementById('settle-list');
+  if(!balEl || !settleEl) return;
+
+  const balances = computeBalances();
+  balEl.innerHTML = expData.members.map(m => {
+    const amt = Math.round((balances[m] || 0) * 100) / 100;
+    let cls = 'zero', label = 'settled up';
+    if(amt > 0.005){ cls = 'positive'; label = 'is owed ' + fmtMoney(amt); }
+    else if(amt < -0.005){ cls = 'negative'; label = 'owes ' + fmtMoney(Math.abs(amt)); }
+    return `<div class="balance-row"><span>${m}</span><span class="balance-amt ${cls}">${label}</span></div>`;
+  }).join('');
+
+  const settlements = simplifyDebts(balances);
+  if(settlements.length === 0){
+    settleEl.innerHTML = `<div class="empty-note">Everyone's settled up.</div>`;
+  } else {
+    settleEl.innerHTML = settlements.map(s =>
+      `<div class="settle-row"><strong>${s.from}</strong> owes <strong>${s.to}</strong> ${fmtMoney(s.amount)}</div>`
+    ).join('');
+  }
+}
+
+function renderSheetConfigUI(){
+  const cfg = loadSheetConfig();
+  const setVal = (id, val) => { const el = document.getElementById(id); if(el) el.value = val || ''; };
+  setVal('sheet-form-url', cfg.formUrl);
+  setVal('sheet-entry-desc', cfg.desc);
+  setVal('sheet-entry-amount', cfg.amount);
+  setVal('sheet-entry-paidby', cfg.paidBy);
+  setVal('sheet-entry-participants', cfg.participants);
+
+  const statusEl = document.getElementById('sheet-status');
+  if(statusEl){
+    if(cfg.formUrl && cfg.desc && cfg.amount && cfg.paidBy){
+      statusEl.textContent = "Form connected — expenses can be logged to your Sheet.";
+      statusEl.className = 'sheet-status ok';
+    } else {
+      statusEl.textContent = "Not configured yet — fill in the fields above and save.";
+      statusEl.className = 'sheet-status missing';
+    }
+  }
+}
+
+function renderExpensesUI(){
+  renderMembers();
+  renderExpenseList();
+  renderBalances();
+  renderSheetConfigUI();
+  const dateEl = document.getElementById('exp-date');
+  if(dateEl && !dateEl.value){
+    dateEl.value = new Date().toISOString().slice(0,10);
+  }
+}
+
+/* ---- Event wiring (delegated on the expenses panel, attached once) ---- */
+expPanel.addEventListener('click', (e) => {
+  const target = e.target;
+
+  if(target.id === 'add-member-btn'){
+    const input = document.getElementById('new-member');
+    const name = input.value.trim();
+    if(name && !expData.members.includes(name)){
+      expData.members.push(name);
+      saveExpenseData(expData);
+      input.value = '';
+      renderMembers();
+      renderBalances();
+    }
+    return;
+  }
+
+  if(target.matches('.remove-member-btn')){
+    const name = target.getAttribute('data-member');
+    expData.members = expData.members.filter(m => m !== name);
+    saveExpenseData(expData);
+    renderMembers();
+    renderBalances();
+    return;
+  }
+
+  if(target.id === 'add-expense-btn'){
+    const desc = document.getElementById('exp-desc').value.trim();
+    const amount = parseFloat(document.getElementById('exp-amount').value);
+    const paidBy = document.getElementById('exp-paidby').value;
+    const date = document.getElementById('exp-date').value;
+    const participants = Array.from(document.querySelectorAll('.exp-part-check:checked')).map(c => c.value);
+
+    if(!desc || !amount || amount <= 0 || !paidBy || participants.length === 0){
+      alert('Please fill in a description, a positive amount, who paid, and at least one participant.');
+      return;
+    }
+    expData.expenses.push({
+      id: 'e' + Date.now() + Math.random().toString(36).slice(2,7),
+      desc, amount, paidBy, participants, date
+    });
+    saveExpenseData(expData);
+    document.getElementById('exp-desc').value = '';
+    document.getElementById('exp-amount').value = '';
+    renderExpenseList();
+    renderBalances();
+    return;
+  }
+
+  if(target.matches('.delete-exp-btn')){
+    const id = target.getAttribute('data-id');
+    expData.expenses = expData.expenses.filter(x => x.id !== id);
+    saveExpenseData(expData);
+    renderExpenseList();
+    renderBalances();
+    return;
+  }
+
+  if(target.matches('.log-sheet-btn')){
+    const id = target.getAttribute('data-id');
+    const exp = expData.expenses.find(x => x.id === id);
+    const cfg = loadSheetConfig();
+    if(!exp || !cfg.formUrl || !cfg.desc || !cfg.amount || !cfg.paidBy){
+      alert('Set up your Google Form config first (bottom of this page) before logging to the Sheet.');
+      return;
+    }
+    const params = new URLSearchParams();
+    params.set(cfg.desc, exp.desc);
+    params.set(cfg.amount, exp.amount);
+    params.set(cfg.paidBy, exp.paidBy);
+    if(cfg.participants){
+      // Split Between is a checkbox-type field in the form — needs one
+      // entry per selected name (same key, repeated), not a joined string.
+      exp.participants.forEach(p => params.append(cfg.participants, p));
+    }
+    const base = cfg.formUrl.split('?')[0];
+    window.open(base + '?' + params.toString(), '_blank');
+    return;
+  }
+
+  if(target.id === 'save-sheet-config-btn'){
+    const cfg = {
+      formUrl: document.getElementById('sheet-form-url').value.trim(),
+      desc: document.getElementById('sheet-entry-desc').value.trim(),
+      amount: document.getElementById('sheet-entry-amount').value.trim(),
+      paidBy: document.getElementById('sheet-entry-paidby').value.trim(),
+      participants: document.getElementById('sheet-entry-participants').value.trim()
+    };
+    saveSheetConfig(cfg);
+    renderSheetConfigUI();
+    return;
+  }
+});
+</script>
+</body>
+</html>
