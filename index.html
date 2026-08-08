@@ -573,18 +573,22 @@ const TRIP = [
     icon:"&#9974;", // tent-ish / teahouse cup
     title:"Canmore &mdash; Lake Louise, Emerald Lake &amp; Wapta Falls",
     date:"Sep 5",
-    route:"Fairview Lookout &middot; Lake Agnes Tea House &middot; Emerald Lake &middot; Wapta Falls",
+    route:"Fairview shuttle &middot; Fairview Lookout &middot; Lake Agnes Tea House &middot; Emerald Lake &middot; Wapta Falls",
     lodging:{ name:"Blackstone Mountain Lodge, Canmore", note:"Long day &mdash; back by evening." },
     stops:[
-      {time:"7:00 &ndash; 7:55am", name:"Drive to Lake Louise", desc:"Early start &mdash; parking fills up fast.", lat:51.4254, lng:-116.1773},
-      {time:"7:55 &ndash; 9:00am", name:"Fairview Lookout hike", desc:"~1.5 mi round trip.", lat:51.4200, lng:-116.1850},
-      {time:"9:00 &ndash; 11:30am", name:"Lake Agnes Tea House hike", desc:"~4.6 mi round trip, includes tea house stop.", note:"Plain of Six Glaciers skipped to leave room for Emerald Lake &amp; Wapta Falls.", lat:51.4360, lng:-116.2010},
-      {time:"11:30am &ndash; 12:15pm", name:"Drive to Emerald Lake", desc:"Via Field, BC.", lat:51.4429, lng:-116.5285},
-      {time:"12:15 &ndash; 1:15pm", name:"Lunch at Cilantro on the Lake", desc:"Lakeside restaurant at Emerald Lake Lodge.", lat:51.4429, lng:-116.5285},
-      {time:"1:15 &ndash; 2:45pm", name:"Kayaking at Emerald Lake", desc:"", lat:51.4429, lng:-116.5285},
-      {time:"2:45 &ndash; 3:05pm", name:"Drive to Wapta Falls trailhead", desc:"", lat:51.4230, lng:-116.6980},
-      {time:"3:05 &ndash; 5:00pm", name:"Wapta Falls hike", desc:"~2.4 km one way.", lat:51.4230, lng:-116.6980},
-      {time:"5:00 &ndash; 6:30pm", name:"Drive back to Canmore", desc:"", lat:51.0784, lng:-115.3617}
+      {time:"6:35 &ndash; 7:30am", name:"Drive to Lake Louise Inn", desc:"Park here for the shuttle (Booking KRNR-020826).", lat:51.4368, lng:-116.1919},
+      {time:"7:30am", name:"Shuttle departs Lake Louise Inn", desc:"Fairview Limousine to Lake Louise Lakeshore.", lat:51.4368, lng:-116.1919},
+      {time:"7:30 &ndash; 7:45am", name:"Shuttle to Lake Louise", desc:"", lat:51.4254, lng:-116.1773},
+      {time:"7:45 &ndash; 8:45am", name:"Fairview Lookout hike", desc:"~1.5 mi round trip.", lat:51.4200, lng:-116.1850},
+      {time:"8:45 &ndash; 11:45am", name:"Lake Agnes Tea House hike", desc:"~4.6 mi round trip, includes tea house stop.", note:"Return shuttle is fixed at 12:15pm &mdash; watch the clock on this one.", lat:51.4360, lng:-116.2010},
+      {time:"11:45am &ndash; 12:15pm", name:"Walk back to shuttle pickup", desc:"", lat:51.4254, lng:-116.1773},
+      {time:"12:15pm", name:"Return shuttle to Lake Louise Inn", desc:"Fixed pickup time (booked in advance).", lat:51.4254, lng:-116.1773},
+      {time:"12:30 &ndash; 1:15pm", name:"Drive to Emerald Lake", desc:"Via Field, BC.", lat:51.4429, lng:-116.5285},
+      {time:"1:15 &ndash; 2:15pm", name:"Lunch at Cilantro on the Lake", desc:"Lakeside restaurant at Emerald Lake Lodge.", lat:51.4429, lng:-116.5285},
+      {time:"2:15 &ndash; 3:45pm", name:"Kayaking at Emerald Lake", desc:"", lat:51.4429, lng:-116.5285},
+      {time:"3:45 &ndash; 4:05pm", name:"Drive to Wapta Falls trailhead", desc:"", lat:51.4230, lng:-116.6980},
+      {time:"4:05 &ndash; 6:00pm", name:"Wapta Falls hike", desc:"~2.4 km one way.", lat:51.4230, lng:-116.6980},
+      {time:"6:00 &ndash; 7:30pm", name:"Drive back to Blackstone Mountain Lodge, Canmore", desc:"", lat:51.0784, lng:-115.3617}
     ]
   },
   {
@@ -593,16 +597,16 @@ const TRIP = [
     icon:"&#9968;", // flag/mountain marker
     title:"Moraine Lake &mdash; Sentinel Pass Hike",
     date:"Sep 6",
-    route:"Sentinel Pass via Larch Valley &middot; free afternoon",
+    route:"Fairview sunrise shuttle &middot; Sentinel Pass via Larch Valley",
     lodging:{ name:"Blackstone Mountain Lodge, Canmore", note:"Dinner in Banff tonight." },
     stops:[
-      {time:"5:00 &ndash; 5:45am", name:"Drive to Lake Louise Park &amp; Ride", desc:"", lat:51.4396, lng:-116.1900},
-      {time:"5:45 &ndash; 6:15am", name:"Parks Canada shuttle to Moraine Lake", desc:"", lat:51.3217, lng:-116.1860},
-      {time:"6:15 &ndash; 10:45am", name:"Sentinel Pass hike via Larch Valley", desc:"~11 km round trip, ~750&ndash;800m elevation gain.", note:"Strenuous &mdash; book the shuttle reservation well in advance.", lat:51.3217, lng:-116.1860},
-      {time:"10:45 &ndash; 11:15am", name:"Shuttle back to Park &amp; Ride", desc:"", lat:51.4396, lng:-116.1900},
-      {time:"11:15am &ndash; 12:00pm", name:"Drive back to Canmore", desc:"", lat:51.0784, lng:-115.3617},
-      {time:"12:00 &ndash; 1:00pm", name:"Lunch / rest", desc:"", lat:51.0784, lng:-115.3617},
-      {time:"1:00 &ndash; 6:00pm", name:"Free time", desc:"Hot springs, Surprise Corner, gondola.", lat:51.1784, lng:-115.5708},
+      {time:"4:20 &ndash; 5:15am", name:"Drive to Lake Louise Inn", desc:"", lat:51.4368, lng:-116.1919},
+      {time:"5:15am", name:"Shuttle departs Lake Louise Inn", desc:"Fairview Limousine sunrise shuttle to Moraine Lake (Booking FYRJ-020826).", lat:51.4368, lng:-116.1919},
+      {time:"5:15 &ndash; 5:45am", name:"Shuttle to Moraine Lake", desc:"", lat:51.3217, lng:-116.1860},
+      {time:"5:45am &ndash; ~10:30am", name:"Sentinel Pass hike via Larch Valley", desc:"~11 km round trip, ~750&ndash;800m elevation gain.", note:"Strenuous. Return shuttle is fixed at 3:45pm, not flexible &mdash; see the gap below.", lat:51.3217, lng:-116.1860},
+      {time:"~10:30am &ndash; 3:45pm", name:"Free time at Moraine Lake / Lake Louise", desc:"~5 hour gap before the booked return shuttle.", note:"Consider Consolation Lakes as an extension, relaxing lakeside, or calling Fairview to move the return earlier (well outside their 72-hour change window).", lat:51.3217, lng:-116.1860},
+      {time:"3:45pm", name:"Return shuttle to Lake Louise Inn", desc:"Fixed pickup time (booked in advance).", lat:51.3217, lng:-116.1860},
+      {time:"4:15 &ndash; 5:15pm", name:"Drive back to Blackstone Mountain Lodge, Canmore", desc:"", lat:51.0784, lng:-115.3617},
       {time:"Evening", name:"Dinner in Banff", desc:"", lat:51.1784, lng:-115.5708}
     ]
   },
@@ -949,7 +953,27 @@ function loadExpenseData(){
     const raw = JSON.parse(localStorage.getItem(EXP_KEY) || "null");
     if(raw) return raw;
   }catch(e){ /* fall through to default */ }
-  return { members: ["Rohit", "Taashi", "Saloni", "Aman"], expenses: [] };
+  return {
+    members: ["Rohit", "Taashi", "Saloni", "Aman"],
+    expenses: [
+      {
+        id: "e-fairview-krnr",
+        desc: "Fairview shuttle — Lake Louise (Booking KRNR-020826)",
+        amount: 179.82,
+        paidBy: "Rohit",
+        participants: ["Rohit", "Taashi", "Saloni", "Aman"],
+        date: "2026-09-05"
+      },
+      {
+        id: "e-fairview-fyrj",
+        desc: "Fairview shuttle — Moraine Lake Sunrise (Booking FYRJ-020826)",
+        amount: 395.60,
+        paidBy: "Rohit",
+        participants: ["Rohit", "Taashi", "Saloni", "Aman"],
+        date: "2026-09-06"
+      }
+    ]
+  };
 }
 function saveExpenseData(data){
   try{ localStorage.setItem(EXP_KEY, JSON.stringify(data)); }
